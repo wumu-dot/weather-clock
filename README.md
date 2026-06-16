@@ -108,3 +108,116 @@ weather_clock/
 ## License
 
 MIT
+
+---
+
+# English Version
+
+A desktop weather clock based on ESP32 + SSD1306 OLED (128×64 I2C), displaying real-time clock, weather, temperature and humidity.
+
+```
+┌──────────────────────┐
+│ [WiFi]  13:13    100 │  ← Status: WiFi + Time + Battery
+│ bengbu               │  ← City name
+│ 22C  [☁]  Cloud      │  ← Temperature + Weather icon + Condition
+│  H:94% F:25C         │  ← Humidity + Feels-like
+└──────────────────────┘
+```
+
+## Features
+
+| Feature | Description |
+|---------|-------------|
+| NTP Time Sync | Auto-sync Beijing time (UTC+8) on boot |
+| Live Weather | open-meteo.com free API, updates every 15 min |
+| Weather Icons | Built-in Sun/Cloud/Rain/Snow 16×16 bitmap icons |
+| WiFi Auto-Reconnect | Reconnects automatically on disconnect |
+| Watchdog | 60s timeout, time-window detection to prevent false positives |
+| Battery Monitor | ADC voltage divider (optional, requires external battery) |
+
+## Hardware
+
+| Part | Spec |
+|------|------|
+| MCU | ESP32 (any dev board) |
+| Display | 0.96" SSD1306 OLED, 128×64, I2C |
+| Wiring | SDA→GPIO21, SCL→GPIO22, VCC→3.3V, GND→GND |
+
+## Quick Start
+
+### 1. Configure WiFi & City
+
+Edit `main/shared/config.h`:
+
+```c
+#define WIFI_SSID           "your_wifi_ssid"
+#define WIFI_PASSWORD       "your_wifi_password"
+#define DEFAULT_CITY        "your_city"
+#define DEFAULT_LAT         32.9408   /* Bengbu latitude */
+#define DEFAULT_LON         117.3608  /* Bengbu longitude */
+```
+
+### 2. Build & Flash
+
+```cmd
+set IDF_PATH=C:\Espressif\v5.4\esp-idf
+idf.py build flash monitor
+```
+
+## Project Structure
+
+```
+weather_clock/
+├── CMakeLists.txt
+├── sdkconfig.defaults         # mbedtls cert bundle config
+├── main/
+│   ├── main.c                 # Entry point, globals, task creation
+│   ├── CMakeLists.txt
+│   ├── shared/
+│   │   ├── config.h           # All configurable parameters
+│   │   └── display_data.h     # Shared data struct + semaphore declarations
+│   ├── tasks/
+│   │   ├── clock_task.c       # Time tracking (1s tick)
+│   │   ├── display_task.c     # OLED rendering loop
+│   │   ├── network_task.c     # WiFi + NTP + weather fetching
+│   │   ├── power_task.c       # Battery ADC sampling
+│   │   └── watchdog_task.c    # Watchdog monitor
+│   ├── drivers/
+│   │   ├── oled_ssd1306.c     # SSD1306 I2C driver
+│   │   └── oled_ssd1306.h
+│   ├── network/
+│   │   ├── wifi.c             # WiFi connection manager
+│   │   ├── wifi.h
+│   │   ├── http_client.c      # HTTPS GET + cert verification
+│   │   └── http_client.h
+│   └── fonts/
+│       ├── font_8x16.c        # ASCII 8×16 + Chinese 16×16 + Icons
+│       └── font_8x16.h
+├── weather_clock/             # Original code (pre-bugfix, for reference)
+│   └── main/...
+├── BUGFIX.md                  # Bug fix log (10 bugs documented)
+├── LICENSE                    # MIT
+└── README.md
+```
+
+## Dependencies
+
+| Component | Purpose |
+|-----------|---------|
+| `esp_http_client` | HTTP/HTTPS requests |
+| `mbedtls` | TLS certificate verification (crt_bundle) |
+| `esp_wifi` | WiFi connectivity |
+| `esp_netif` + `nvs_flash` | Network stack + NVS |
+| `json` (cJSON) | Weather API JSON parsing |
+| `driver` (legacy I2C) | SSD1306 I2C communication |
+| `esp_adc` | Battery voltage sampling |
+
+## Weather API
+
+Powered by [open-meteo.com](https://open-meteo.com) — free, no API key required, no registration.
+
+To change the location, update `DEFAULT_LAT` / `DEFAULT_LON` in `config.h`.
+
+## License
+
+MIT
