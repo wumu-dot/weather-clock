@@ -1,0 +1,27 @@
+# ESP-IDF build artifacts
+build/
+
+# sdkconfig (user-specific)
+sdkconfig
+sdkconfig.old
+
+# IDE
+.vscode/
+.claude/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Dependencies / tools
+managed_components/
+dependencies.lock
+
+# Flash args (auto-generated)
+flash_args
+flash_*_args
+flasher_args.json
